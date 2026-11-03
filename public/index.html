@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Design Digest</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%23111'/><text x='16' y='22' font-size='16' font-family='Georgia' text-anchor='middle' fill='%23fff'>D</text></svg>">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo" aria-hidden="true">D</span>
+      <div>
+        <h1>Design Digest</h1>
+        <p class="meta" id="lastRefresh">Loading…</p>
+      </div>
+    </div>
+    <label class="search">
+      <span class="visually-hidden">Search articles</span>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="search" type="search" placeholder="Search titles, summaries, sources…  ( / )" autocomplete="off">
+    </label>
+    <button id="refreshBtn" class="btn ghost" type="button" title="Fetch the latest articles">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg>
+      <span>Refresh</span>
+    </button>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar" aria-label="Filters">
+      <nav class="group">
+        <h2>Views</h2>
+        <ul id="views" class="navlist"></ul>
+      </nav>
+      <nav class="group">
+        <h2>Categories</h2>
+        <ul id="categories" class="navlist"></ul>
+      </nav>
+      <section class="group">
+        <h2>Your interests</h2>
+        <p class="hint" id="interestsHint">Like or dislike articles to teach the digest what you care about.</p>
+        <div id="interests" class="interests"></div>
+        <button id="resetBtn" class="linkbtn" type="button" hidden>Reset learned interests</button>
+      </section>
+      <section class="group">
+        <details>
+          <summary><h2>Sources</h2></summary>
+          <ul id="sources" class="sourcelist"></ul>
+        </details>
+      </section>
+    </aside>
+
+    <main>
+      <div class="toolbar">
+        <div class="segmented" role="tablist" aria-label="Time period" id="periods"></div>
+        <div class="toolbar-right">
+          <label class="toggle"><input type="checkbox" id="hideRead"> Hide read</label>
+          <label class="select">Sort
+            <select id="sort">
+              <option value="foryou">For you</option>
+              <option value="newest">Newest</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <section id="picks" class="picks" hidden>
+        <h2 class="section-title">Top picks for you</h2>
+        <div id="picksGrid" class="picks-grid"></div>
+      </section>
+
+      <h2 class="section-title" id="listTitle">All articles</h2>
+      <p class="count" id="count"></p>
+      <div id="list" class="grid" aria-live="polite"></div>
+      <button id="moreBtn" class="btn more" type="button" hidden>Show more</button>
+      <div id="empty" class="empty" hidden></div>
+    </main>
+  </div>
+
+  <div id="toast" class="toast" role="status" hidden></div>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

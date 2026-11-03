@@ -1,0 +1,14 @@
+{
+  "name": "design-digest",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A personal, local design news digest with categories, search, and feedback-driven ranking.",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "refresh": "node server.js --refresh-only"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

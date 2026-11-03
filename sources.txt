@@ -1,0 +1,14 @@
+# Design Digest: your sources
+#
+# Add one website per line. A homepage or blog URL works; Design Digest
+# finds the site's RSS/Atom feed automatically. Direct feed URLs work too.
+#
+# Optionally give it a display name after a pipe:
+#   https://www.itsnicethat.com | It's Nice That
+#
+# Lines starting with # are ignored. Changes are picked up on the next
+# Refresh (button in the app), hourly, or when the server starts.
+
+https://www.itsnicethat.com | It's Nice That
+https://www.underconsideration.com/brandnew/ | Brand New
+https://www.designmilk.com | Design Milk
