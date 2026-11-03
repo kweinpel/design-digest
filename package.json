@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
-    "refresh": "node server.js --refresh-only"
+    "refresh": "node server.js --refresh-only",
+    "build": "node server.js --build"
   },
   "engines": {
     "node": ">=20"

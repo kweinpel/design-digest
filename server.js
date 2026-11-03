@@ -404,7 +404,7 @@ const server = http.createServer(async (req, res) => {
     if (url.pathname === '/api/articles' && req.method === 'GET') {
       let store = await readJson(ARTICLES_FILE, null);
       if (!store) store = await refresh();
-      return send(res, 200, { ...store, categories: [...CATEGORIES.map((c) => c.name), FALLBACK_CATEGORY] });
+      return send(res, 200, { ...store, categories: categoryNames() });
     }
     if (url.pathname === '/api/refresh' && req.method === 'POST') {
       const store = await refresh();
@@ -470,7 +470,24 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
-if (process.argv.includes('--refresh-only')) {
+// Writes a static copy to site/ for GitHub Pages: the UI plus a snapshot of the articles.
+async function buildStatic() {
+  const store = await refresh();
+  const out = path.join(ROOT, 'site');
+  await fs.rm(out, { recursive: true, force: true });
+  await fs.cp(PUBLIC_DIR, out, { recursive: true });
+  const indexFile = path.join(out, 'index.html');
+  const html = await fs.readFile(indexFile, 'utf8');
+  await fs.writeFile(indexFile, html.replace('<meta charset="utf-8">', '<meta charset="utf-8">\n  <meta name="dd-mode" content="static">'));
+  await fs.writeFile(path.join(out, 'articles.json'), JSON.stringify({ ...store, categories: categoryNames() }));
+  await fs.writeFile(path.join(out, '.nojekyll'), '');
+  console.log(`Static site written to ${out}`);
+}
+const categoryNames = () => [...CATEGORIES.map((c) => c.name), FALLBACK_CATEGORY];
+
+if (process.argv.includes('--build')) {
+  await buildStatic();
+} else if (process.argv.includes('--refresh-only')) {
   await refresh();
 } else {
   server.on('error', (err) => {

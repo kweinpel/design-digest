@@ -66,6 +66,18 @@ function toast(msg, action) {
   clearTimeout(toast.t);
   toast.t = setTimeout(() => { el.hidden = true; }, 4000);
 }
+// The GitHub Pages build has no server: articles come from articles.json and feedback stays in this browser.
+const STATIC = document.querySelector('meta[name="dd-mode"]')?.content === 'static';
+const FEEDBACK_KEY = 'dd:feedback';
+const readLocalFeedback = () => JSON.parse(localStorage.getItem(FEEDBACK_KEY) || '{}');
+const writeLocalFeedback = () => localStorage.setItem(FEEDBACK_KEY, JSON.stringify(state.feedback));
+function snapshotOf(a) {
+  return {
+    title: a.title, link: safeHttpUrl(a.link), source: a.source, category: a.category, keywords: (a.keywords ?? []).slice(0, 12),
+    tags: a.tags ?? [], date: a.date ?? null, summary: String(a.summary ?? '').slice(0, 500), image: a.image ?? '',
+  };
+}
+
 let sessionToken = null;
 async function api(path, opts = {}) {
   const method = (opts.method ?? 'GET').toUpperCase();
@@ -316,6 +328,12 @@ async function sendFeedback(id, patch) {
   const prev = state.feedback[id] ? { ...state.feedback[id] } : null;
   const next = { ...(state.feedback[id] ?? {}), ...patch, article: a, updatedAt: new Date().toISOString() };
   if (!next.vote && !next.saved) delete state.feedback[id]; else state.feedback[id] = next;
+  if (STATIC) {
+    if (state.feedback[id]) state.feedback[id].article = snapshotOf(a);
+    writeLocalFeedback();
+    render();
+    return;
+  }
   render();
   try {
     const { entry } = await api('/api/feedback', { method: 'POST', body: JSON.stringify({ id, ...patch }) });
@@ -390,6 +408,11 @@ document.addEventListener('auxclick', (e) => {
 // Opens in the system browser via the local server, so it works even where pop-ups are blocked.
 async function openArticle(id) {
   markRead(id);
+  if (STATIC) {
+    const link = safeHttpUrl(findArticle(id)?.link);
+    if (!link || !window.open(link, '_blank', 'noopener')) toast('Couldn’t open the article in a new window.');
+    return;
+  }
   try {
     await api('/api/open', { method: 'POST', body: JSON.stringify({ id }) });
   } catch {
@@ -428,8 +451,16 @@ $('#moreBtn').addEventListener('click', () => { state.limit += PAGE_SIZE; render
 $('#resetBtn').addEventListener('click', async () => {
   if (!confirm('Clear all likes and dislikes? Saved articles are kept.')) return;
   try {
-    await api('/api/feedback/reset-votes', { method: 'POST' });
-    state.feedback = await api('/api/feedback');
+    if (STATIC) {
+      for (const [id, entry] of Object.entries(state.feedback)) {
+        delete entry.vote;
+        if (!entry.saved) delete state.feedback[id];
+      }
+      writeLocalFeedback();
+    } else {
+      await api('/api/feedback/reset-votes', { method: 'POST' });
+      state.feedback = await api('/api/feedback');
+    }
     render();
     toast('Interests reset.');
   } catch (e) {
@@ -442,7 +473,7 @@ $('#refreshBtn').addEventListener('click', async () => {
   btn.disabled = true;
   try {
     const before = new Set(state.articles.map((a) => a.id));
-    await api('/api/refresh', { method: 'POST' });
+    if (!STATIC) await api('/api/refresh', { method: 'POST' });
     await load();
     const added = state.articles.filter((a) => !before.has(a.id)).length;
     toast(added ? `${added} new article${added === 1 ? '' : 's'}` : 'You’re all caught up.');
@@ -454,8 +485,12 @@ $('#refreshBtn').addEventListener('click', async () => {
   }
 });
 
+if (STATIC) $('#refreshBtn').title = 'Load the latest published articles (updated every 3 hours)';
+
 async function load() {
-  const [data, feedback] = await Promise.all([api('/api/articles'), api('/api/feedback')]);
+  const [data, feedback] = STATIC
+    ? [await (await fetch('articles.json', { cache: 'no-cache' })).json(), readLocalFeedback()]
+    : await Promise.all([api('/api/articles'), api('/api/feedback')]);
   Object.assign(state, { articles: data.articles, categories: data.categories, sources: data.sources, lastRefresh: data.lastRefresh, feedback });
   render();
 }

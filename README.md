@@ -13,6 +13,19 @@ Open http://localhost:4321. It needs Node 20 or later and has no dependencies.
 
 Feeds refresh when the server starts, every hour while it runs, and whenever you click **Refresh**.
 
+## Web version (GitHub Pages)
+
+A read-only copy is published at https://kweinpel.github.io/design-digest/. A GitHub Action (`.github/workflows/pages.yml`) fetches the feeds every 3 hours and on every push to `main`. You can also start it manually from the repo's **Actions** tab.
+
+The web version works differently from the local one:
+
+- Likes, dislikes, and saves are stored in that browser only. They don't sync with the Mac app or other devices.
+- **Refresh** loads the latest published articles instead of fetching the feeds.
+- Articles open in a new browser tab.
+- The site and this repo are public, including `sources.txt`.
+
+To build the static site yourself, run `npm run build`. It writes to `site/`.
+
 ## Features
 
 - **Daily, Weekly, Monthly, All** switch the time period.
